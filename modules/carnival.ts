@@ -77,6 +77,7 @@ async function getAuthToken(wallet: Wallet, codeChallenge: string, attempts: num
     } catch (error) {
         if (attempts < projectConfig.retryCount) {
             log("error", `Attempt [${attempts + 1}/${projectConfig.retryCount}] failed: ${(error as Error).message}. Retrying...`);
+            await sleep([5, 5])
             return getAuthToken(wallet, codeChallenge, attempts + 1)
         } else {
             log("error", `Failed to claim stamp after [${attempts + 1}/${projectConfig.retryCount}] attempts.`);
@@ -128,35 +129,17 @@ async function claimStamp(wallet: Wallet, codeVerifier: string, codeChallenge: s
 
 
 async function stampStats(wallet: Wallet, codeVerifier: string, codeChallenge: string, attempts: number = 0) {
-    try {
-        let codeAuth
-        const uuid: string = crypto.randomUUID();
+    const auth = await getAuthToken(wallet, codeChallenge)
 
-        const msg = `Welcome to Fractal Christmas Market\n\nWallet address:\n${wallet.address}\n\nNonce:\n${uuid}`
-        const sign = wallet.signMessage(msg)
+    if (typeof auth === "string") {
+        await sleep([5, 5])
 
-        try {
-            const test = await makeCarnivalAuth(wallet.address, codeChallenge, sign, btoa(msg), wallet.proxy)
-            console.log(test)
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                codeAuth = error.request.path.split('=')[1]
-            }
+        const status = await getUserData(wallet.address, auth, codeVerifier, wallet.proxy)
 
-        }
+        await sleep([5, 5])
 
-        const status = await getUserData(wallet.address, codeAuth, codeVerifier, wallet.proxy)
+        const stats = await getStampStats(wallet.address, status.data.access_token, status.data.user.id, wallet.proxy)
 
-        const stats = await getStampStats(wallet.address, codeAuth, status.data.user.id, wallet.proxy)
-
-        console.log(stats)
-    } catch (error) {
-        if (attempts < projectConfig.retryCount) {
-            log("error", `Attempt [${attempts + 1}/${projectConfig.retryCount}] failed: ${(error as Error).message}. Retrying...`);
-            return stampStats(wallet, codeVerifier, codeChallenge, attempts + 1)
-        } else {
-            log("error", `Failed to get stamps count after [${attempts + 1}/${projectConfig.retryCount}] attempts.`);
-        }
+        console.log(stats.data.length)
     }
 }
-

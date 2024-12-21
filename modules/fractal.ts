@@ -139,7 +139,6 @@ export async function getStampStats(address: string, auth: string, userId: strin
         httpsAgent: getProxy(proxy),
         httpAgent: getProxy(proxy),
         headers: {
-            "Cookie": projectConfig.cookie,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Authorization": `Bearer ${auth}`,
             "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFycXB4YnV2YXRhbGppbmtvdG5qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NDY3ODAsImV4cCI6MjA0OTEyMjc4MH0.XBTbi1vAlaHNTHjQN_0YvKBz3SmQMApWyJ0PHXq1yYc",
